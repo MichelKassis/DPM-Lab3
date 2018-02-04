@@ -3,8 +3,7 @@ package ca.mcgill.ecse211.lab3;
 
 
 import ca.mcgill.ecse211.sensor.Odometer;
-
-
+import ca.mcgill.ecse211.sensor.UltrasonicPoller;
 import lejos.hardware.ev3.LocalEV3;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
@@ -18,19 +17,21 @@ public class Navigation extends Thread{
 				new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 		public static final EV3LargeRegulatedMotor rightMotor =
 				new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
-		public static final EV3UltrasonicSensor ultraSensor =
-				new EV3UltrasonicSensor(LocalEV3.get().getPort("S1"));
-		public static final EV3MediumRegulatedMotor spinMotor= 
-				new EV3MediumRegulatedMotor(LocalEV3.get().getPort("S3"));
-	
+//		public static final EV3UltrasonicSensor ultraSensor =
+//				new EV3UltrasonicSensor(LocalEV3.get().getPort("S1"));
+//		public static final EV3MediumRegulatedMotor spinMotor= 
+//				new EV3MediumRegulatedMotor(LocalEV3.get().getPort("S3"));
+//	
 	
 	
 	
 	private static Odometer odo;
-	private static SampleProvider us;
-	private static float[] usData;
+//	private static SampleProvider usDist = ultraSensor.getMode("Distance");;
+//	private static float[] usData = new float[usDist.sampleSize()];
+	//UltrasonicPoller usPoller =
 	
 	public final double tileSize= 30.48;
+	private static boolean isNavigating;
 	private static int x[];
 	private static int y[];
 
@@ -57,7 +58,8 @@ public class Navigation extends Thread{
 	}
 
 	public void travelto(double i, double j) {
-
+		
+		isNavigating = true;
 		//initialize
 		double direction = 0;
 		//find direction and distance in cm
@@ -84,7 +86,7 @@ public class Navigation extends Thread{
 			}
 			
 		}
-		if(deltaY<5&&deltaY>-5){
+		if(deltaX<5&&deltaX>-5){
 			if (deltaX<0) {
 				direction = -90;
 			}
@@ -103,12 +105,16 @@ public class Navigation extends Thread{
 		// move forward with the distance calculated
 		leftMotor.rotate(convertDistance(lab3.WHEEL_RAD, distance), true);
 		rightMotor.rotate(convertDistance(lab3.WHEEL_RAD, distance), false);
-		 
+		
+		isNavigating = false;
+		 	
 	
 
 	}
 
 	public static void turnTo(double theta) {
+		
+		isNavigating = true;
 		
 		double turn = theta - odo.getTheta();
 		if(turn>180){
@@ -132,23 +138,29 @@ public class Navigation extends Thread{
 			leftMotor.rotate(-convertAngle(lab3.WHEEL_RAD, lab3.TRACK, turn), true);
 			rightMotor.rotate(convertAngle(lab3.WHEEL_RAD, lab3.TRACK, turn), false);	
 		}
-	}
-
-	public static void avoid(){
 		
-		//get data from the ultrasonic sensor
-		us.fetchSample(usData,0);
-		float obDist = usData[0];
-		
-		// if our EV3 is too close to the obstacle
-		if(obDist<50){
-			turnTo(odo.getTheta()+90);
-			leftMotor.rotate(convertDistance(lab3.WHEEL_RAD, 20), true);
-			rightMotor.rotate(convertDistance(lab3.WHEEL_RAD, 20), false);
-		}
-		
+		isNavigating = false;
 	}
 	
+	public boolean isNavigating(){
+		return isNavigating;
+	}
+
+//	public static void avoid(){
+//		
+//		//get data from the ultrasonic sensor
+//		usDist.fetchSample(usData,0);
+//		float obDist = usData[0];
+//		
+//		// if our EV3 is too close to the obstacle
+//		if(obDist<50){
+//			turnTo(odo.getTheta()+90);
+//			leftMotor.rotate(convertDistance(lab3.WHEEL_RAD, 20), true);
+//			rightMotor.rotate(convertDistance(lab3.WHEEL_RAD, 20), false);
+//		}
+//		
+//	}
+//	
 	
 	
 	
