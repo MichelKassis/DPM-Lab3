@@ -39,8 +39,8 @@ public class Navigation extends Thread{
 
 
 	public Navigation(int X[], int Y[]) {
-		x=X;
-		y=Y;
+		this.x = X;
+		this.y = Y;
 
 	}
 
@@ -49,7 +49,6 @@ public class Navigation extends Thread{
 		//loop all the points
 		for (int i = 0; i < x.length; i++) {
 			travelto(x[i]*tileSize, y[i]*tileSize);
-
 		}
 		//end program
 		System.exit(0);
@@ -61,8 +60,8 @@ public class Navigation extends Thread{
 		//initialize
 		double direction = 0;
 		//find direction and distance in cm
-		double deltaX = i-odo.getX();
-		double deltaY = j-odo.getY();	
+		double deltaX = i - odo.getX();
+		double deltaY = j - odo.getY();	
 		double distance = Math.sqrt((deltaX*deltaX)+(deltaY*deltaY));
 	
 		
@@ -75,8 +74,8 @@ public class Navigation extends Thread{
 		}
 		
 		//filter out small error that cause deltaX/deltaY to be negative
-		if(deltaY<5&&deltaY>-5){
-			if (deltaY<0) {
+		if( deltaY < 5 && deltaY > -5){
+			if (deltaY < 0) {
 				direction = 180;
 			}
 			else{
@@ -84,8 +83,8 @@ public class Navigation extends Thread{
 			}
 			
 		}
-		if(deltaY<5&&deltaY>-5){
-			if (deltaX<0) {
+		if(deltaY < 5 && deltaY > -5){
+			if (deltaX < 0) {
 				direction = -90;
 			}
 			else{
@@ -94,7 +93,7 @@ public class Navigation extends Thread{
 		}
 		
 		// if delta X and delta Y both <0, direction+180
-		if (!(deltaY<5&&deltaY>-5) && !(deltaY<5&&deltaY>-5) && deltaX<0&&deltaY<0) {
+		if (!(deltaY< 5 && deltaY > -5) && !(deltaY < 5 && deltaY > -5) && deltaX < 0 && deltaY < 0) {
 			direction +=180;
 		}
 
@@ -111,10 +110,10 @@ public class Navigation extends Thread{
 	public static void turnTo(double theta) {
 		
 		double turn = theta - odo.getTheta();
-		if(turn>180){
+		if(turn > 180){
 			turn -= 360;
 		}
-		else if(turn<-180){
+		else if(turn < -180){
 			turn +=360;
 		}
 		leftMotor.setSpeed(lab3.ROTATE_SPEED);
@@ -135,17 +134,39 @@ public class Navigation extends Thread{
 	}
 
 	public static void avoid(){
-		
+		// 23, 14
 		//get data from the ultrasonic sensor
-		us.fetchSample(usData,0);
-		float obDist = usData[0];
-		
-		// if our EV3 is too close to the obstacle
-		if(obDist<50){
-			turnTo(odo.getTheta()+90);
-			leftMotor.rotate(convertDistance(lab3.WHEEL_RAD, 20), true);
-			rightMotor.rotate(convertDistance(lab3.WHEEL_RAD, 20), false);
-		}
+//		us.fetchSample(usData,0);
+//		float obDist = usData[0];
+//		
+//		// if our EV3 is too close to the obstacle
+//		if(obDist < 50){
+//			turnTo(odo.getTheta()+90);
+//			leftMotor.rotate(convertDistance(lab3.WHEEL_RAD, 20), true);
+//			rightMotor.rotate(convertDistance(lab3.WHEEL_RAD, 20), false);
+//		}
+		leftMotor.stop();
+		rightMotor.stop();
+		leftMotor.setSpeed(lab3.ROTATE_SPEED);
+		rightMotor.setSpeed(lab3.ROTATE_SPEED);
+		leftMotor.rotate(convertAngle(lab3.WHEEL_RADIUS, lab3.TRACK,90), true);
+	    rightMotor.rotate(-convertAngle(lab3.WHEEL_RADIUS, lab3.TRACK, 90), false);
+	    double currentX = odo.getX();
+	    double currentY = odo.getY();
+	    while(currentX+20>odo.getX() &&currentY+20>odo.getY()) {
+	    	leftMotor.forward();
+	    	rightMotor.forward();
+	    }
+	    leftMotor.stop();
+	    rightMotor.stop();
+	    leftMotor.rotate(-convertAngle(lab3.WHEEL_RADIUS, lab3.TRACK,75), true);
+	    rightMotor.rotate(convertAngle(lab3.WHEEL_RADIUS, lab3.TRACK, 75), false);
+		currentX=odo.getX();
+		currentY=odo.getY();
+		while(currentX+20 > odo.getX() && currentY+20 > odo.getY()) {
+	    	leftMotor.forward();
+	    	rightMotor.forward();
+	    }
 		
 	}
 	
