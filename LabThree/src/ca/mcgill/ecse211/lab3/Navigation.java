@@ -19,7 +19,7 @@ public class Navigation extends Thread{
 	static boolean isNavigating;
 	private static int x[];
 	private static int y[];
-	private boolean notSmallValue = true;
+	private static boolean notSmallValue = true;
 
 	public Navigation(int X[], int Y[]) {
 		this.x = X;
@@ -36,7 +36,7 @@ public class Navigation extends Thread{
 		System.exit(0);
 	}
 
-	public void travelTo(double i, double j) {
+	public static void travelTo(double i, double j) {
 		isNavigating = true;
 		//initialize
 		double direction = 0;
@@ -45,8 +45,8 @@ public class Navigation extends Thread{
 		double deltaY = j - odo.getY();	
 		double distance = Math.sqrt((deltaX*deltaX)+(deltaY*deltaY));
 		
-		System.out.println("X:"+ deltaX);
-		System.out.println("Y:"+ deltaY);
+	//	System.out.println("X:"+ deltaX);
+	//	System.out.println("Y:"+ deltaY);
 
 		//in case deltaY goes to 0 though it has really small possibility to be actually 0
 		try{
@@ -63,7 +63,7 @@ public class Navigation extends Thread{
 			else{
 				direction = 90;
 			}	
-			System.out.println("b");
+			//System.out.println("b");
 			notSmallValue = false;
 			
 		}
@@ -75,7 +75,7 @@ public class Navigation extends Thread{
 			else{
 				direction = 0;
 			}
-			System.out.println("a");
+			//System.out.println("a");
 		notSmallValue = false;
 		}
 
@@ -83,11 +83,8 @@ public class Navigation extends Thread{
 		// if delta X and delta Y both <0, direction+180
 		if (notSmallValue  && deltaY < 0) {
 			direction +=180;
-			System.out.println("c");
+			//System.out.println("c");
 			
-		}
-		if(Avoidance.distance < 50) {
-			this.avoid();
 		}
 
 		System.out.println(direction);
@@ -97,6 +94,14 @@ public class Navigation extends Thread{
 		// move forward with the distance calculated
 		leftMotor.rotate(convertDistance(lab3.WHEEL_RAD, distance), true);
 		rightMotor.rotate(convertDistance(lab3.WHEEL_RAD, distance), false);
+		while(true) {
+			System.out.println("avoidance is ");
+			if(Avoidance.distance < 50) {
+				avoid(i,j);
+				return;
+			}
+			if(leftMotor.isMoving() &&rightMotor.isMoving()) break;
+		}
 		isNavigating = false;
 		notSmallValue = true;
 	}
@@ -138,7 +143,7 @@ public class Navigation extends Thread{
 
 	}
 
-	public static void avoid(){
+	public static void avoid(double x, double y){
 	
 		leftMotor.stop();
 		rightMotor.stop();
@@ -158,12 +163,13 @@ public class Navigation extends Thread{
 		rightMotor.rotate(convertAngle(lab3.WHEEL_RAD, lab3.TRACK, 75), false);
 		currentX=odo.getX();
 		currentY=odo.getY();
-		while(currentX+20 > odo.getX() && currentY+20 > odo.getY()) {
+		while(currentX + 20 > odo.getX() && currentY + 20 > odo.getY()) {
 			leftMotor.forward();
 			rightMotor.forward();
 		}
 
 		isNavigating = false;
+		travelTo(x,y);
 	}
 
 	public boolean isNavigating(){
