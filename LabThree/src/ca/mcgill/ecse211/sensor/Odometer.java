@@ -55,6 +55,9 @@ public class Odometer extends OdometerData implements Runnable {
 		this.WHEEL_RAD = WHEEL_RAD;
 
 	}
+	
+	//added a second constructor 
+
 
 	/**
 	 * This method is meant to ensure only one instance of the odometer is used throughout the code.

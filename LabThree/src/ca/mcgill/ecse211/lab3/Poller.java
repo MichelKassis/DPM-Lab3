@@ -1,5 +1,6 @@
 package ca.mcgill.ecse211.lab3;
 
+import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.sensor.*;
 import lejos.robotics.SampleProvider;
 
@@ -10,6 +11,7 @@ public class Poller extends Thread {
 	private SampleProvider provider;
 	private Navigation gps;
 	public volatile int dist;
+	public static final EV3UltrasonicSensor ultraSensor = new EV3UltrasonicSensor(LocalEV3.get().getPort("S1"));
 	public Poller(EV3UltrasonicSensor usSensor, SampleProvider provider, float[] usData) {
 		this.sensor= usSensor; 
 		this.usData = usData;
@@ -19,7 +21,7 @@ public class Poller extends Thread {
 		return usData[0];
 	}
 	public void setNavigation(Navigation gps) {
-		this.gps= gps;
+		this.gps = gps;
 	}
 	public void setUsData(float distance) {
 		usData[0]= distance; 

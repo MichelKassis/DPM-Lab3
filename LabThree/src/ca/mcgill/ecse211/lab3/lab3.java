@@ -28,21 +28,22 @@ public class lab3 {
 	public static final int FORWARD_SPEED = 150;
 	public static final int ROTATE_SPEED = 150;
 	public static float OBSTACLEDIST = 100;
+	public static final double errorRange = 5;
+	public static final int NORMAL_SPEED= 200;
+	public static final int HIGH_SPEED= 400;
+	public static final int LOW_SPEED= 100;
 	
 	  private static final EV3LargeRegulatedMotor leftMotor =
 		      new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 		  
 		  private static final EV3LargeRegulatedMotor rightMotor =
-		      new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
+		      new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
 
 	
 	
 	//declare display and odometer needed
 	private static final TextLCD lcd = LocalEV3.get().getTextLCD();
 	public static Odometer odometer;
-
-
-	//maps
 	
 	
 //	private static int xarr[] = {1,2,2,0,1};                                   

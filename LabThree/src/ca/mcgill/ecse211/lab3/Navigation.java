@@ -4,6 +4,7 @@ package ca.mcgill.ecse211.lab3;
 
 import ca.mcgill.ecse211.sensor.Odometer;
 import ca.mcgill.ecse211.sensor.UltrasonicPoller;
+import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
@@ -17,8 +18,7 @@ public class Navigation extends Thread{
 				new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 		public static EV3LargeRegulatedMotor rightMotor =
 				new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
-		public static final EV3UltrasonicSensor ultraSensor =
-				new EV3UltrasonicSensor(LocalEV3.get().getPort("S1"));
+
 //		public static final EV3MediumRegulatedMotor spinMotor= 
 //				new EV3MediumRegulatedMotor(LocalEV3.get().getPort("S3"));
 //	
@@ -48,85 +48,119 @@ public class Navigation extends Thread{
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
 		poller.setNavigation(this);
-		
-		
-		
 	}
 
 	public void run() {
 		odo = lab3.odometer;
 		//loop all the points
 		for (int i = 0; i < x.length; i++) {
-			travelto(x[i]*tileSize, y[i]*tileSize);
+			travelTo(x[i]*tileSize, y[i]*tileSize);
 		}
 		//end program
 		System.exit(0);
 
 	}
-
-	public void travelto(double i, double j) {
-		
+	public void travelTo(double x, double y) {
 		isNavigating = true;
-		//initialize
-		double direction = 0;
-		//find direction and distance in cm
-		double deltaX = i - odo.getX();
-		double deltaY = j - odo.getY();	
-		double distance = Math.sqrt((deltaX*deltaX)+(deltaY*deltaY));
-		
-		// detect wall infront of you
-	
-//		if(obDist < 50){
-//			avoid();
-//		 }
-		
-		
-	
-		
-		//in case deltaY goes to 0 though it has really small possibility to be actually 0
-		try{
-			direction = Math.toDegrees(Math.atan(deltaX/deltaY));
-		}
-		catch(ArithmeticException e ){
-			
-		}
-		
-		//filter out small error that cause deltaX/deltaY to be negative
-		if( deltaY < 5 && deltaY > -5){
-			if (deltaY < 0) {
-				direction = 180;
-			}
-			else{
-				direction = 0;
-			}
-			
-		}
-
-		if(deltaX<5&&deltaX>-5){
-			if (deltaX<0) {
-				direction = -90;
-			}
-			else{
-				direction = 90;
+		try {
+			Navigation.sleep(2000);
+		} catch (InterruptedException e) {}
+			Double differenceX= x-odo.getX();
+			Double differenceY= y-odo.getY();
+			double distance = Math.sqrt(Math.pow(differenceY, 2) + Math.pow(differenceX, 2)); 
+			double thetaC= Math.atan2(differenceY,differenceX);
+			if (differenceX<0&&differenceY>=0) {
+				turnTo((2.5*Math.PI) - thetaC);
 			}	
-		}
-		
-		// if delta X and delta Y both <0, direction+180
-		if (!(deltaY< 5 && deltaY > -5) && !(deltaY < 5 && deltaY > -5) && deltaX < 0 && deltaY < 0) {
-			direction +=180;
+			else if(differenceX<=0&&differenceY<0) {
+				turnTo(/*thetaC+*/(Math.PI/2) - thetaC);
+			}
+			else {
+				turnTo((Math.PI/2) - thetaC);
+			}
+			leftMotor.setSpeed(lab3.LOW_SPEED);
+			rightMotor.setSpeed(lab3.LOW_SPEED);
+			
+			leftMotor.rotate(convertDistance(lab3.WHEEL_RAD, distance), true);
+			rightMotor.rotate(convertDistance(lab3.WHEEL_RAD, distance), false);
+			leftMotor.stop();
+			rightMotor.stop();
+			leftMotor.setSpeed(0);
+		    rightMotor.setSpeed(0);
+			differenceX = x - odo.getX();
+			differenceY = y - odo.getY();
+			if (Math.sqrt(differenceX)+Math.sqrt(differenceY) < Math.sqrt(lab3.errorRange)) {
+				leftMotor.stop();
+				rightMotor.stop();
+				Sound.playNote(Sound.FLUTE, 440, 250);
+				isNavigating = false;
+}
+			
 		}
 
-		turnTo(direction);
-		
-		// move forward with the distance calculated
-		leftMotor.rotate(convertDistance(lab3.WHEEL_RAD, distance), true);
-		rightMotor.rotate(convertDistance(lab3.WHEEL_RAD, distance), false);
-		
-		isNavigating = false;
-		 	
-	
-
-	}
+//	public void travelto(double i, double j) {
+//		
+//		isNavigating = true;
+//		//initialize
+//		double direction = 0;
+//		//find direction and distance in cm
+//		double deltaX = i - odo.getX();
+//		double deltaY = j - odo.getY();	
+//		double distance = Math.sqrt((deltaX*deltaX)+(deltaY*deltaY));
+//		
+//		// detect wall infront of you
+//	
+////		if(obDist < 50){
+////			avoid();
+////		 }
+//		
+//		
+//	
+//		
+//		//in case deltaY goes to 0 though it has really small possibility to be actually 0
+//		try{
+//			direction = Math.toDegrees(Math.atan(deltaX/deltaY));
+//		}
+//		catch(ArithmeticException e ){
+//			
+//		}
+//		
+//		//filter out small error that cause deltaX/deltaY to be negative
+//		if( deltaY < 5 && deltaY > -5){
+//			if (deltaY < 0) {
+//				direction = 180;
+//			}
+//			else{
+//				direction = 0;
+//			}
+//			
+//		}
+//
+//		if(deltaX<5&&deltaX>-5){
+//			if (deltaX<0) {
+//				direction = -90;
+//			}
+//			else{
+//				direction = 90;
+//			}	
+//		}
+//		
+//		// if delta X and delta Y both <0, direction+180
+//		if (!(deltaY< 5 && deltaY > -5) && !(deltaY < 5 && deltaY > -5) && deltaX < 0 && deltaY < 0) {
+//			direction +=180;
+//		}
+//
+//		turnTo(direction);
+//		
+//		// move forward with the distance calculated
+//		leftMotor.rotate(convertDistance(lab3.WHEEL_RAD, distance), true);
+//		rightMotor.rotate(convertDistance(lab3.WHEEL_RAD, distance), false);
+//		
+//		isNavigating = false;
+//		 	
+//	
+//
+//	}
 
 	public static void turnTo(double theta) {
 		
