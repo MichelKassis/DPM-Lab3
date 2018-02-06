@@ -1,29 +1,19 @@
 package ca.mcgill.ecse211.lab3;
 
-import java.util.ArrayList;
-
-import ca.mcgill.ecse211.lab3.Display;
-
 import ca.mcgill.ecse211.sensor.Odometer;
 import ca.mcgill.ecse211.sensor.OdometerExceptions;
 import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
-import lejos.hardware.motor.EV3LargeRegulatedMotor;
-import lejos.hardware.motor.EV3MediumRegulatedMotor;
-import lejos.hardware.port.Port;
-import lejos.hardware.sensor.EV3ColorSensor;
-import lejos.hardware.sensor.EV3UltrasonicSensor;
-import lejos.hardware.sensor.SensorModes;
-import lejos.robotics.SampleProvider;
+
 
 public class lab3 {
 
 	
 
 	//basic info about my EV3
-	public static final double WHEEL_RAD = 2.2;  
-	public static final double TRACK = 14.8; 
+	public static final double WHEEL_RAD = 2.0;  
+	public static final double TRACK = 11.0; 
 	public static final int FORWARD_SPEED = 150;
 	public static final int ROTATE_SPEED = 150;
 	public static float OBSTACLEDIST = 100;
@@ -31,7 +21,7 @@ public class lab3 {
 	
 	
 	//declare display and odometer needed
-	private static final TextLCD lcd = LocalEV3.get().getTextLCD();
+	
 	public static Odometer odometer;
 
 
@@ -52,33 +42,28 @@ public class lab3 {
 
 		// Odometer related objects
 		odometer = Odometer.getOdometer(Navigation.leftMotor, Navigation.rightMotor, TRACK, WHEEL_RAD); 
+		Navigation navigator = new Navigation(map2x,map2y);
+		
 		 
-		
-		
-		// implementation
-		Display odometryDisplay = new Display(lcd); 
-	
-
-		
-			
-
-			
+		// implementation			
 		Thread odoThread = new Thread(odometer);
-		odoThread.start();
-//		Thread odoDisplayThread = new Thread(odometryDisplay);
-//		odoDisplayThread.start();
-		Thread navigation = new Thread();
-
-
+		//Thread Avoidance = new Thread();
+		Thread Navigator = new Thread(navigator);
+		odoThread.setPriority(3);
+		//Avoidance.setPriority(2);
+		Navigator.setPriority(1);
 		
+		odoThread.start();
+		//Avoidance.start();
+		
+		
+
 
 //		//start
 		Button.waitForAnyPress();
-		Navigation navigator = new Navigation(map2x,map2y);
-//		UltraSonicSensor ultra = new UltraSonicSensor();
-		navigator.start();
-//		ultra.start();
+		
 
+		navigator.start();
 
 
 
