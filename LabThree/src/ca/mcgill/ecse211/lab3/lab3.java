@@ -1,5 +1,6 @@
 package ca.mcgill.ecse211.lab3;
 
+
 import java.util.ArrayList;
 
 import ca.mcgill.ecse211.lab3.Display;
@@ -27,6 +28,12 @@ public class lab3 {
 	public static final int FORWARD_SPEED = 150;
 	public static final int ROTATE_SPEED = 150;
 	public static float OBSTACLEDIST = 100;
+	
+	  private static final EV3LargeRegulatedMotor leftMotor =
+		      new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
+		  
+		  private static final EV3LargeRegulatedMotor rightMotor =
+		      new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 
 	
 	
@@ -47,43 +54,89 @@ public class lab3 {
 
 	public static void main(String[] args) throws OdometerExceptions {
 		
+//		int buttonChoice;
+//		// Odometer related objects
+//		odometer = Odometer.getOdometer(Navigation.leftMotor, Navigation.rightMotor, TRACK, WHEEL_RAD); 
+//		// implementation
+//		Display odometryDisplay = new Display(lcd); 
+//		Thread odoThread = new Thread(odometer);
+//		odoThread.start();
+////		Thread odoDisplayThread = new Thread(odometryDisplay);
+////		odoDisplayThread.start();
+//		Thread navigation = new Thread();
+////		//start
+//		Button.waitForAnyPress();
+//		Navigation navigator = new Navigation(map2x,map2y);
+////		UltraSonicSensor ultra = new UltraSonicSensor();
+//		navigator.start();
+////		ultra.start();
+//		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
+//		System.exit(0);
+		  int buttonChoice;
 
-		int buttonChoice;
+		    final TextLCD t = LocalEV3.get().getTextLCD();
+		    Odometer odometer = Odometer.getOdometer(Navigation.leftMotor, Navigation.rightMotor, TRACK, WHEEL_RAD); 
+		    EV3UltrasonicSensor usSensor = new EV3UltrasonicSensor(LocalEV3.get().getPort("S1"));
+		    SampleProvider provider = usSensor.getMode("Distance");
+		    float [] sample= new float[provider.sampleSize()];
+		    Poller usPoller= new Poller(usSensor,provider,sample );
+		    OdometryDisplay odometryDisplay = new OdometryDisplay(odometer, t, usPoller);
+		   
+		    Navigation gps = new Navigation(odometer, usPoller, leftMotor, rightMotor);
+		    do {
+		      // clear the display
+		      t.clear();
 
-		// Odometer related objects
-		odometer = Odometer.getOdometer(Navigation.leftMotor, Navigation.rightMotor, TRACK, WHEEL_RAD); 
-		 
-		
-		
-		// implementation
-		Display odometryDisplay = new Display(lcd); 
-	
+		      // ask the user whether the motors should drive in a square or float
+		      t.drawString("      Map1 ", 0, 0);
+		      t.drawString("     __|__      ", 0, 1);
+		      t.drawString("Map3 __|__  Map2 ", 0, 2);
+		      t.drawString("       |    ", 0, 3);
+		      t.drawString("      Map4  ", 0, 4);
 
-		
-			
+		      buttonChoice = Button.waitForAnyPress();
+		    } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT
+		    		&&buttonChoice != Button.ID_UP && buttonChoice != Button.ID_DOWN);
+		    Thread odoThread = new Thread(odometer);
+		    if (buttonChoice == Button.ID_UP) {
+		      t.clear();
+		      gps.setPath(0,2,1,1,2,2,2,1,1,0);
+		      //gps.setPath(1,2); 
+		      gps.start();
+		      odoThread.start();
+		      usPoller.start();
+		      odometryDisplay.start();
 
-			
-		Thread odoThread = new Thread(odometer);
-		odoThread.start();
-//		Thread odoDisplayThread = new Thread(odometryDisplay);
-//		odoDisplayThread.start();
-		Thread navigation = new Thread();
+		    } else if (buttonChoice == Button.ID_RIGHT) {
+		      // clear the display
+		      t.clear();
+		      gps.setPath(1,1,0,2,2,2,2,1,1,0);
+		      //gps.setPath(2,2);
+		      gps.start();
+		      odoThread.start();
+		      usPoller.start();
+		      odometryDisplay.start();
+		   
+		    }
+		    else if(buttonChoice== Button.ID_LEFT) {
+		    	t.clear();
+		    	gps.setPath(1,0,2,1,2,2,0,2,1,1);
+		    	gps.start();
+		    	 odoThread.start();
+		    	usPoller.start();
+		    	odometryDisplay.start();
+		    }
+		    else if(buttonChoice==Button.ID_DOWN) {
+		    	t.clear();
+		    	gps.setPath(0,1,1,2,1,0,2,1,2,2);
+		    	gps.start();
+		    	odoThread.start();
+		    	usPoller.start();
+		    	odometryDisplay.start();
+		    }
 
-
-		
-
-//		//start
-		Button.waitForAnyPress();
-		Navigation navigator = new Navigation(map2x,map2y);
-//		UltraSonicSensor ultra = new UltraSonicSensor();
-		navigator.start();
-//		ultra.start();
-
-
-
-
-		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
-		System.exit(0);
+		    while (Button.waitForAnyPress() != Button.ID_ESCAPE);
+		    System.exit(0);
 
 	}
 }

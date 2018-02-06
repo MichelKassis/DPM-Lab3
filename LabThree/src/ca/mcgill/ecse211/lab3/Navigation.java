@@ -13,12 +13,12 @@ import lejos.robotics.SampleProvider;
 
 public class Navigation extends Thread{
 	//declare the port occupied by the motor and sensor
-		public static final EV3LargeRegulatedMotor leftMotor =
+		public static EV3LargeRegulatedMotor leftMotor =
 				new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
-		public static final EV3LargeRegulatedMotor rightMotor =
+		public static EV3LargeRegulatedMotor rightMotor =
 				new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
-//		public static final EV3UltrasonicSensor ultraSensor =
-//				new EV3UltrasonicSensor(LocalEV3.get().getPort("S1"));
+		public static final EV3UltrasonicSensor ultraSensor =
+				new EV3UltrasonicSensor(LocalEV3.get().getPort("S1"));
 //		public static final EV3MediumRegulatedMotor spinMotor= 
 //				new EV3MediumRegulatedMotor(LocalEV3.get().getPort("S3"));
 //	
@@ -26,23 +26,31 @@ public class Navigation extends Thread{
 	
 	
 	private static Odometer odo;
-//	private static SampleProvider usDist = ultraSensor.getMode("Distance");;
-//	private static float[] usData = new float[usDist.sampleSize()];
-	//UltrasonicPoller usPoller =
-	
-	public final double tileSize= 30.48;
+
+		
+	public final double tileSize = 30.48;
 	private static boolean isNavigating;
-	private static int x[];
-	private static int y[];
+	private static double x[];
+	private static double y[];
+	private int usData;
+	private Poller poller;
+	private boolean avoiding;
 
 
 
 
 
-	public Navigation(int X[], int Y[]) {
-		this.x = X;
-		this.y = Y;
-
+	public Navigation(Odometer odometer, Poller usPoller, EV3LargeRegulatedMotor leftMotor,EV3LargeRegulatedMotor rightMotor) {
+		this.odo = odometer;
+		this.poller= usPoller;
+		this.avoiding= false;
+		this.isNavigating =false;
+		this.leftMotor = leftMotor;
+		this.rightMotor = rightMotor;
+		poller.setNavigation(this);
+		
+		
+		
 	}
 
 	public void run() {
@@ -67,11 +75,10 @@ public class Navigation extends Thread{
 		double distance = Math.sqrt((deltaX*deltaX)+(deltaY*deltaY));
 		
 		// detect wall infront of you
-		us.fetchSample(usData,0);
-		float obDist = usData[0];
-		if(obDist < 50){
-			avoid();
-		 }
+	
+//		if(obDist < 50){
+//			avoid();
+//		 }
 		
 		
 	
@@ -157,8 +164,8 @@ public class Navigation extends Thread{
 		rightMotor.stop();
 		leftMotor.setSpeed(lab3.ROTATE_SPEED);
 		rightMotor.setSpeed(lab3.ROTATE_SPEED);
-		leftMotor.rotate(convertAngle(lab3.WHEEL_RADIUS, lab3.TRACK,90), true);
-	    rightMotor.rotate(-convertAngle(lab3.WHEEL_RADIUS, lab3.TRACK, 90), false);
+		leftMotor.rotate(convertAngle(lab3.WHEEL_RAD, lab3.TRACK,90), true);
+	    rightMotor.rotate(-convertAngle(lab3.WHEEL_RAD, lab3.TRACK, 90), false);
 	    double currentX = odo.getX();
 	    double currentY = odo.getY();
 	    while(currentX+20>odo.getX() &&currentY+20>odo.getY()) {
@@ -167,8 +174,8 @@ public class Navigation extends Thread{
 	    }
 	    leftMotor.stop();
 	    rightMotor.stop();
-	    leftMotor.rotate(-convertAngle(lab3.WHEEL_RADIUS, lab3.TRACK,75), true);
-	    rightMotor.rotate(convertAngle(lab3.WHEEL_RADIUS, lab3.TRACK, 75), false);
+	    leftMotor.rotate(-convertAngle(lab3.WHEEL_RAD, lab3.TRACK,75), true);
+	    rightMotor.rotate(convertAngle(lab3.WHEEL_RAD, lab3.TRACK, 75), false);
 		currentX=odo.getX();
 		currentY=odo.getY();
 		while(currentX+20 > odo.getX() && currentY+20 > odo.getY()) {
@@ -178,22 +185,57 @@ public class Navigation extends Thread{
 		
 		isNavigating = false;
 	}
+	public void avoid(Double x, Double y) {
+		rightMotor.stop();
+		leftMotor.setSpeed(lab3.ROTATE_SPEED);
+		rightMotor.setSpeed(lab3.ROTATE_SPEED);
+		leftMotor.rotate(convertAngle(lab3.WHEEL_RAD, lab3.TRACK,90), true);
+	    rightMotor.rotate(-convertAngle(lab3.WHEEL_RAD, lab3.TRACK, 90), false);
+	    double currentX = odo.getX();
+	    double currentY = odo.getY();
+	    while(currentX+20>odo.getX() &&currentY+20>odo.getY()) {
+	    	leftMotor.forward();
+	    	rightMotor.forward();
+	    }
+	    leftMotor.stop();
+	    rightMotor.stop();
+	    leftMotor.rotate(-convertAngle(lab3.WHEEL_RAD, lab3.TRACK,75), true);
+	    rightMotor.rotate(convertAngle(lab3.WHEEL_RAD, lab3.TRACK, 75), false);
+		currentX=odo.getX();
+		currentY=odo.getY();
+		while(currentX+20 > odo.getX() && currentY+20 > odo.getY()) {
+	    	leftMotor.forward();
+	    	rightMotor.forward();
+	    }
+		
+		isNavigating = false;
+		travelto(x,y);
+	}
 	
 	public boolean isNavigating(){
 		return isNavigating;
 	}
-
-		
+    // method to set the data 
+	public void setUsData(int data) {
+		this.usData = data;
+	}
 	
-
-
+	// method to get the data
+	public int getUsData() {
+		return usData;
+	}
 	//copied from code given in last lab
-	  private static int convertDistance(double radius, double distance) {
+	private static int convertDistance(double radius, double distance) {
 		    return (int) ((180.0 * distance) / (Math.PI * radius));
 		  }
-
-		  public static int convertAngle(double radius, double width, double angle) {
+    public static int convertAngle(double radius, double width, double angle) {
 		    return convertDistance(radius, Math.PI * width * angle / 360.0);
 		  }
-
+    
+    public void setPath(double... waypoints) {
+		for (int i = 0; i < waypoints.length; i++) {
+			this.x = waypoints;
+			this.x[i]= waypoints[i]* 30.48;
+		}
+	}
 }
