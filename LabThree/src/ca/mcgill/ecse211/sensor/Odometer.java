@@ -41,16 +41,13 @@ public class Odometer extends OdometerData implements Runnable {
 	private Odometer(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
 			final double TRACK, final double WHEEL_RAD) throws OdometerExceptions {
 		odoData = OdometerData.getOdometerData(); // Allows access to x,y,z
-		// manipulation methods
+		//manipulation methods
 		this.leftMotor = leftMotor;
 		this.rightMotor = rightMotor;
-
 		// Reset the values of x, y and z to 0
 		odoData.setXYT(0, 0, 0);
-
-		//		this.leftMotorTachoCount = 0; ******************************
-		//		this.rightMotorTachoCount = 0;
-
+		//this.leftMotorTachoCount = 0; ******************************
+		//this.rightMotorTachoCount = 0;
 		this.TRACK = TRACK;
 		this.WHEEL_RAD = WHEEL_RAD;
 
@@ -85,7 +82,6 @@ public class Odometer extends OdometerData implements Runnable {
 
 		if (odo == null) {
 			throw new OdometerExceptions("No previous Odometer exits.");
-
 		}
 		return odo;
 	}
@@ -125,12 +121,6 @@ public class Odometer extends OdometerData implements Runnable {
 
 			
 			//I did not do lots of comment above since it's almost the same as the code Prof. provide in the slides.
-
-
-
-
-
-
 			// this ensures that the odometer only runs once every period
 			updateEnd = System.currentTimeMillis();
 			if (updateEnd - updateStart < ODOMETER_PERIOD) {

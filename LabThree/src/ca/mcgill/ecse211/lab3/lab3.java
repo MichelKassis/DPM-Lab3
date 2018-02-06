@@ -6,7 +6,9 @@ package ca.mcgill.ecse211.lab3;
 
 
 import ca.mcgill.ecse211.sensor.Odometer;
+
 import ca.mcgill.ecse211.sensor.OdometerExceptions;
+import ca.mcgill.ecse211.sensor.UltrasonicPoller;
 import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
@@ -57,22 +59,21 @@ public class lab3 {
 		// Odometer related objects
 		odometer = Odometer.getOdometer(Navigation.leftMotor, Navigation.rightMotor, TRACK, WHEEL_RAD); 
 		Navigation navigator = new Navigation(map3x,map3y);
+		Avoidance avoid = new Avoidance();
+//		UltrasonicPoller poller = new UltrasonicPoller();
+//		Thread Poller = new Thread(poller);
 		
 		 
 		// implementation			
 		Thread odoThread = new Thread(odometer);
-		Thread Avoidance = new Thread();
+		Thread Avoidance = new Thread(avoid);
 		Thread Navigator = new Thread(navigator);
-		odoThread.setPriority(3);
-		Avoidance.setPriority(2);
-		Navigator.setPriority(1);
-		
+//		odoThread.setPriority(3);
+//		Avoidance.setPriority(2);
+//		Navigator.setPriority(1);
 		odoThread.start();
 		Avoidance.start();
-		
-		
-
-
+//		Poller.start();
 //		//start
 		Button.waitForAnyPress();
 		

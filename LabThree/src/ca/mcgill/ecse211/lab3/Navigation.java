@@ -13,19 +13,17 @@ public class Navigation extends Thread{
 	public static final EV3LargeRegulatedMotor leftMotor  =	new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 	public static final EV3LargeRegulatedMotor rightMotor =	new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
 
-	private static Odometer odo;
+	static Odometer odo;
 	
 	public final double tileSize= 30.48;
-	private static boolean isNavigating;
+	static boolean isNavigating;
 	private static int x[];
 	private static int y[];
 	private boolean notSmallValue = true;
-	
 
 	public Navigation(int X[], int Y[]) {
 		this.x = X;
 		this.y = Y;
-
 	}
 
 	public void run() {
@@ -36,11 +34,9 @@ public class Navigation extends Thread{
 		}
 		//end program
 		System.exit(0);
-
 	}
 
 	public void travelTo(double i, double j) {
-
 		isNavigating = true;
 		//initialize
 		double direction = 0;
@@ -49,19 +45,18 @@ public class Navigation extends Thread{
 		double deltaY = j - odo.getY();	
 		double distance = Math.sqrt((deltaX*deltaX)+(deltaY*deltaY));
 		
-		System.out.println("X:"+deltaX);
-		System.out.println("Y:"+deltaY);
+		System.out.println("X:"+ deltaX);
+		System.out.println("Y:"+ deltaY);
 
 		//in case deltaY goes to 0 though it has really small possibility to be actually 0
 		try{
 			direction = Math.toDegrees(Math.atan(deltaX/deltaY));
 		}
-		catch(ArithmeticException e ){
-
+		catch(ArithmeticException e){
+			
 		}
-
 		//filter out small error that cause deltaX/deltaY to be negative
-		if( deltaY <3 && deltaY > -3){
+		if( deltaY < 3 && deltaY > -3){
 			if (deltaX<0) {
 				direction = -90;
 			}
@@ -86,10 +81,13 @@ public class Navigation extends Thread{
 
 		System.out.println("smallv:"+notSmallValue);
 		// if delta X and delta Y both <0, direction+180
-		if (notSmallValue && deltaX > 0 && deltaY < 0) {
+		if (notSmallValue  && deltaY < 0) {
 			direction +=180;
 			System.out.println("c");
 			
+		}
+		if(Avoidance.distance < 50) {
+			this.avoid();
 		}
 
 		System.out.println(direction);
@@ -141,8 +139,7 @@ public class Navigation extends Thread{
 	}
 
 	public static void avoid(){
-		// 23, 14
-		//get data from the ultrasonic sensor
+	
 		leftMotor.stop();
 		rightMotor.stop();
 		leftMotor.setSpeed(lab3.ROTATE_SPEED);
