@@ -162,34 +162,56 @@ public class Navigation extends Thread{
 //
 //	}
 
-	public static void turnTo(double theta) {
-		
-		isNavigating = true;
-		
-		double turn = theta - odo.getTheta();
-		if(turn > 180){
-			turn -= 360;
+	
+	public void turnTo(double thetaD) {
+		Sound.beep();
+		double thetaDiff= (thetaD - odo.getTheta())*(180/Math.PI);
+		if(thetaDiff>=180){ 
+			thetaDiff-= 360;
 		}
-		else if(turn < -180){
-			turn +=360;
+		else if(thetaDiff<=-180){
+			thetaDiff+= 360;
 		}
 		leftMotor.setSpeed(lab3.ROTATE_SPEED);
 		rightMotor.setSpeed(lab3.ROTATE_SPEED);
-		
-		turn %=360;
-		if (turn>0) {
-			leftMotor.rotate(convertAngle(lab3.WHEEL_RAD, lab3.TRACK, turn), true);
-			rightMotor.rotate(-convertAngle(lab3.WHEEL_RAD, lab3.TRACK, turn), false);
-			
-		}
-		//turn the other way
-		else {
-			turn = -turn;
-			leftMotor.rotate(-convertAngle(lab3.WHEEL_RAD, lab3.TRACK, turn), true);
-			rightMotor.rotate(convertAngle(lab3.WHEEL_RAD, lab3.TRACK, turn), false);	
-		}
-
+	    int rotationNum= convertAngle(lab3.WHEEL_RAD, lab3.TRACK, thetaDiff);
+	    //if (rotationNum>0) {
+	    	leftMotor.rotate(rotationNum,true);//rotationNum might need to divide by 2
+	    	rightMotor.rotate(-rotationNum,false);
+	    
+	    leftMotor.stop();
+	    rightMotor.stop();
+	    leftMotor.setSpeed(0);
+	    rightMotor.setSpeed(0);
 	}
+//	public static void turnTo(double theta) {
+//		
+//		isNavigating = true;
+//		
+//		double turn = theta - odo.getTheta();
+//		if(turn > 180){
+//			turn -= 360;
+//		}
+//		else if(turn < -180){
+//			turn +=360;
+//		}
+//		leftMotor.setSpeed(lab3.ROTATE_SPEED);
+//		rightMotor.setSpeed(lab3.ROTATE_SPEED);
+//		
+//		turn %=360;
+//		if (turn>0) {
+//			leftMotor.rotate(convertAngle(lab3.WHEEL_RAD, lab3.TRACK, turn), true);
+//			rightMotor.rotate(-convertAngle(lab3.WHEEL_RAD, lab3.TRACK, turn), false);
+//			
+//		}
+//		//turn the other way
+//		else {
+//			turn = -turn;
+//			leftMotor.rotate(-convertAngle(lab3.WHEEL_RAD, lab3.TRACK, turn), true);
+//			rightMotor.rotate(convertAngle(lab3.WHEEL_RAD, lab3.TRACK, turn), false);	
+//		}
+//
+//	}
 
 	public static void avoid(){
 		// 23, 14
